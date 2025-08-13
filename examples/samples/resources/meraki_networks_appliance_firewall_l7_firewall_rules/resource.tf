@@ -31,8 +31,8 @@ resource "meraki_networks_appliance_firewall_l7_firewall_rules" "global_firewall
   network_id = "L_828099381482771185"
   rules = [{
 
-    policy = "deny"
-    type   = "allowedCountries"
+    policy     = "deny"
+    type       = "allowedCountries"
     value_list = ["NO", "DK"]
   }]
 }
