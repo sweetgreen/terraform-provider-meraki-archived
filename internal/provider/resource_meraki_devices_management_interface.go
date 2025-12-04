@@ -19,6 +19,7 @@ package provider
 // RESOURCE NORMAL
 import (
 	"context"
+	"strconv"
 
 	merakigosdk "github.com/meraki/dashboard-api-go/v5/sdk"
 
@@ -30,7 +31,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -92,7 +92,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 			},
 			"wan1": schema.SingleNestedAttribute{
 				MarkdownDescription: `WAN 1 settings`,
-				Computed:            true,
 				Optional:            true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -101,18 +100,16 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 
 					"static_dns": schema.SetAttribute{
 						MarkdownDescription: `Up to two DNS IPs.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.Set{
 							setplanmodifier.UseStateForUnknown(),
 						},
 
 						ElementType: types.StringType,
-						Default:     setdefault.StaticValue(types.SetNull(types.StringType)),
+						// Default:     setdefault.StaticValue(types.SetNull(types.StringType)),
 					},
 					"static_gateway_ip": schema.StringAttribute{
 						MarkdownDescription: `The IP of the gateway on the WAN.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -120,7 +117,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					},
 					"static_ip": schema.StringAttribute{
 						MarkdownDescription: `The IP the device should use on the WAN.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -128,7 +124,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					},
 					"static_subnet_mask": schema.StringAttribute{
 						MarkdownDescription: `The subnet mask for the WAN.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -136,7 +131,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					},
 					"using_static_ip": schema.BoolAttribute{
 						MarkdownDescription: `Configure the interface to have static IP settings or use DHCP.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.UseStateForUnknown(),
@@ -144,7 +138,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					},
 					"vlan": schema.Int64Attribute{
 						MarkdownDescription: `The VLAN that management traffic should be tagged with. Applies whether usingStaticIp is true or false.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.Int64{
 							int64planmodifier.UseStateForUnknown(),
@@ -153,7 +146,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					"wan_enabled": schema.StringAttribute{
 						MarkdownDescription: `Enable or disable the interface (only for MX devices). Valid values are 'enabled', 'disabled', and 'not configured'.
                                         Allowed values: [disabled,enabled,not configured]`,
-						Computed: true,
 						Optional: true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -170,7 +162,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 			},
 			"wan2": schema.SingleNestedAttribute{
 				MarkdownDescription: `WAN 2 settings (only for MX devices)`,
-				Computed:            true,
 				Optional:            true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -179,17 +170,15 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 
 					"static_dns": schema.SetAttribute{
 						MarkdownDescription: `Up to two DNS IPs.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.Set{
 							setplanmodifier.UseStateForUnknown(),
 						},
-						Default:     setdefault.StaticValue(types.SetNull(types.StringType)),
+						// Default:     setdefault.StaticValue(types.SetNull(types.StringType)),
 						ElementType: types.StringType,
 					},
 					"static_gateway_ip": schema.StringAttribute{
 						MarkdownDescription: `The IP of the gateway on the WAN.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -197,7 +186,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					},
 					"static_ip": schema.StringAttribute{
 						MarkdownDescription: `The IP the device should use on the WAN.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -205,7 +193,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					},
 					"static_subnet_mask": schema.StringAttribute{
 						MarkdownDescription: `The subnet mask for the WAN.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -213,7 +200,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					},
 					"using_static_ip": schema.BoolAttribute{
 						MarkdownDescription: `Configure the interface to have static IP settings or use DHCP.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.UseStateForUnknown(),
@@ -221,7 +207,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					},
 					"vlan": schema.Int64Attribute{
 						MarkdownDescription: `The VLAN that management traffic should be tagged with. Applies whether usingStaticIp is true or false.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.Int64{
 							int64planmodifier.UseStateForUnknown(),
@@ -230,7 +215,6 @@ func (r *DevicesManagementInterfaceResource) Schema(_ context.Context, _ resourc
 					"wan_enabled": schema.StringAttribute{
 						MarkdownDescription: `Enable or disable the interface (only for MX devices). Valid values are 'enabled', 'disabled', and 'not configured'.
                                         Allowed values: [disabled,enabled,not configured]`,
-						Computed: true,
 						Optional: true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -300,7 +284,7 @@ func (r *DevicesManagementInterfaceResource) Create(ctx context.Context, req res
 		if restyResp2 != nil {
 			resp.Diagnostics.AddError(
 				"Failure when executing RebootDevice",
-				restyResp2.String(),
+				"Status: "+strconv.Itoa(restyResp2.StatusCode())+"\n"+restyResp2.String(),
 			)
 			return
 		}
@@ -409,7 +393,7 @@ func (r *DevicesManagementInterfaceResource) Update(ctx context.Context, req res
 		if restyResp2 != nil {
 			resp.Diagnostics.AddError(
 				"Failure when executing UpdateDeviceManagementInterface",
-				restyResp2.String(),
+				"Status: "+strconv.Itoa(restyResp2.StatusCode())+"\n"+restyResp2.String(),
 			)
 			return
 		}
@@ -545,9 +529,24 @@ func ResponseDevicesGetDeviceManagementInterfaceItemToBodyRs(state DevicesManage
 		DdnsHostnames: func() *ResponseDevicesGetDeviceManagementInterfaceDdnsHostnamesRs {
 			if response.DdnsHostnames != nil {
 				return &ResponseDevicesGetDeviceManagementInterfaceDdnsHostnamesRs{
-					ActiveDdnsHostname: types.StringValue(response.DdnsHostnames.ActiveDdnsHostname),
-					DdnsHostnameWan1:   types.StringValue(response.DdnsHostnames.DdnsHostnameWan1),
-					DdnsHostnameWan2:   types.StringValue(response.DdnsHostnames.DdnsHostnameWan2),
+					ActiveDdnsHostname: func() types.String {
+						if response.DdnsHostnames.ActiveDdnsHostname != "" {
+							return types.StringValue(response.DdnsHostnames.ActiveDdnsHostname)
+						}
+						return types.String{}
+					}(),
+					DdnsHostnameWan1: func() types.String {
+						if response.DdnsHostnames.DdnsHostnameWan1 != "" {
+							return types.StringValue(response.DdnsHostnames.DdnsHostnameWan1)
+						}
+						return types.String{}
+					}(),
+					DdnsHostnameWan2: func() types.String {
+						if response.DdnsHostnames.DdnsHostnameWan2 != "" {
+							return types.StringValue(response.DdnsHostnames.DdnsHostnameWan2)
+						}
+						return types.String{}
+					}(),
 				}
 			}
 			return nil
@@ -555,10 +554,25 @@ func ResponseDevicesGetDeviceManagementInterfaceItemToBodyRs(state DevicesManage
 		Wan1: func() *ResponseDevicesGetDeviceManagementInterfaceWan1Rs {
 			if response.Wan1 != nil {
 				return &ResponseDevicesGetDeviceManagementInterfaceWan1Rs{
-					StaticDNS:        StringSliceToSet(response.Wan1.StaticDNS),
-					StaticGatewayIP:  types.StringValue(response.Wan1.StaticGatewayIP),
-					StaticIP:         types.StringValue(response.Wan1.StaticIP),
-					StaticSubnetMask: types.StringValue(response.Wan1.StaticSubnetMask),
+					StaticDNS: StringSliceToSet(response.Wan1.StaticDNS),
+					StaticGatewayIP: func() types.String {
+						if response.Wan1.StaticGatewayIP != "" {
+							return types.StringValue(response.Wan1.StaticGatewayIP)
+						}
+						return types.String{}
+					}(),
+					StaticIP: func() types.String {
+						if response.Wan1.StaticIP != "" {
+							return types.StringValue(response.Wan1.StaticIP)
+						}
+						return types.String{}
+					}(),
+					StaticSubnetMask: func() types.String {
+						if response.Wan1.StaticSubnetMask != "" {
+							return types.StringValue(response.Wan1.StaticSubnetMask)
+						}
+						return types.String{}
+					}(),
 					UsingStaticIP: func() types.Bool {
 						if response.Wan1.UsingStaticIP != nil {
 							return types.BoolValue(*response.Wan1.UsingStaticIP)
@@ -571,7 +585,12 @@ func ResponseDevicesGetDeviceManagementInterfaceItemToBodyRs(state DevicesManage
 						}
 						return types.Int64{}
 					}(),
-					WanEnabled: types.StringValue(response.Wan1.WanEnabled),
+					WanEnabled: func() types.String {
+						if response.Wan1.WanEnabled != "" {
+							return types.StringValue(response.Wan1.WanEnabled)
+						}
+						return types.String{}
+					}(),
 				}
 			}
 			return nil
@@ -579,10 +598,25 @@ func ResponseDevicesGetDeviceManagementInterfaceItemToBodyRs(state DevicesManage
 		Wan2: func() *ResponseDevicesGetDeviceManagementInterfaceWan2Rs {
 			if response.Wan2 != nil {
 				return &ResponseDevicesGetDeviceManagementInterfaceWan2Rs{
-					StaticDNS:        StringSliceToSet(response.Wan2.StaticDNS),
-					StaticGatewayIP:  types.StringValue(response.Wan2.StaticGatewayIP),
-					StaticIP:         types.StringValue(response.Wan2.StaticIP),
-					StaticSubnetMask: types.StringValue(response.Wan2.StaticSubnetMask),
+					StaticDNS: StringSliceToSet(response.Wan2.StaticDNS),
+					StaticGatewayIP: func() types.String {
+						if response.Wan2.StaticGatewayIP != "" {
+							return types.StringValue(response.Wan2.StaticGatewayIP)
+						}
+						return types.String{}
+					}(),
+					StaticIP: func() types.String {
+						if response.Wan2.StaticIP != "" {
+							return types.StringValue(response.Wan2.StaticIP)
+						}
+						return types.String{}
+					}(),
+					StaticSubnetMask: func() types.String {
+						if response.Wan2.StaticSubnetMask != "" {
+							return types.StringValue(response.Wan2.StaticSubnetMask)
+						}
+						return types.String{}
+					}(),
 					UsingStaticIP: func() types.Bool {
 						if response.Wan2.UsingStaticIP != nil {
 							return types.BoolValue(*response.Wan2.UsingStaticIP)
@@ -595,7 +629,12 @@ func ResponseDevicesGetDeviceManagementInterfaceItemToBodyRs(state DevicesManage
 						}
 						return types.Int64{}
 					}(),
-					WanEnabled: types.StringValue(response.Wan2.WanEnabled),
+					WanEnabled: func() types.String {
+						if response.Wan2.WanEnabled != "" {
+							return types.StringValue(response.Wan2.WanEnabled)
+						}
+						return types.String{}
+					}(),
 				}
 			}
 			return nil

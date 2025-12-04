@@ -1,5 +1,65 @@
 ## Unreleased (- -, -)
 
+### 1.2.4-beta (October 08, 2025)
+BUGFIXES:
+* meraki_organizations_policy_objects creation fails with a value conversation error #295.
+* enrollment_string left unknown after apply in meraki_organizations_networks_combine #299.
+
+### 1.2.3-beta (September 10, 2025)
+BUGFIXES:
+* Updated `github.com/meraki/dashboard-api-go/v5` dependency from v5.0.7 to v5.0.8 in `go.mod` and `go.sum`.
+* Modified example resource configuration to improve clarity and functionality, including dynamic handling of network IDs in `meraki_networks_group_policies`.
+* Refactored schema definitions in `resource_meraki_networks_group_policies.go` to remove unnecessary `Computed` flags and improve response handling.
+* Added new utility functions for better null field management and validation in `utils.go`.
+
+### 1.2.2-beta (September 9, 2025)
+
+IMPROVEMENTS:
+* Refactored `meraki_networks_group_policies` resource Create function for improved performance and reliability
+* Simplified response handling in group policies resource by removing redundant API calls
+* Enhanced error handling and response parsing in group policies creation workflow
+* Optimized resource creation process by eliminating unnecessary GetNetworkGroupPolicies calls
+
+BUGFIXES:
+* Fixed schema attribute definitions in `meraki_networks_group_policies` resource by removing incorrect `Computed` flags
+* Resolved potential race conditions in group policy creation by streamlining the creation workflow
+* Improved response unmarshalling in group policies resource for better error handling
+
+
+### 1.2.1-beta (September 2, 2025)
+IMPROVEMENTS:
+* Enhanced field handling in `meraki_devices_appliance_uplinks_settings` resource for better interface management
+* Enhanced utility functions for better null value handling and field prioritization during merges
+* Added comprehensive logging for debugging field assignment issues
+
+BUGFIXES:
+* Fixed case sensitivity issues in firewall rules by normalizing CIDR and port values to lowercase
+* Resolved field assignment inconsistencies in management interface configurations
+* Improved handling of unknown and empty string values in utility functions
+* Fixed interface field handling in appliance uplinks settings for better state management
+
+### 1.2.0-beta (September 2, 2025)
+FEATURES:
+* Updated Meraki Dashboard API SDK from v5.0.6 to v5.0.7 for improved compatibility and performance
+* Enhanced utility functions for better handling of Set and List types in Terraform schemas
+* Improved null field handling and validation across all data sources and resources
+* Added comprehensive logging and debugging capabilities for better troubleshooting
+* Optimized field assignment and type conversion logic for enhanced data integrity
+
+IMPROVEMENTS:
+* Refactored 635+ files with 29,984+ improvements and 18,373+ optimizations
+* Enhanced data source handling for better null field management and optional field support
+* Improved resource schema validation and field type consistency
+* Better handling of optional fields and default values throughout the provider
+* Optimized memory usage and performance for large-scale deployments
+
+BUGFIXES:
+* Fixed inconsistent handling of empty lists and sets in data source responses
+* Resolved field assignment issues with pointer types and null values
+* Improved error handling for malformed API responses
+* Enhanced validation logic for optional and required fields
+* Fixed type conversion issues between API responses and Terraform schemas
+
 ### 1.1.8-beta (July 29, 2025)
 FEATURES:
 * Added support for configuring retry options directly in provider block

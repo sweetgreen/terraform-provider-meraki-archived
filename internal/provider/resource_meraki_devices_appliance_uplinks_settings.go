@@ -19,20 +19,20 @@ package provider
 // RESOURCE NORMAL
 import (
 	"context"
+	"log"
+	"strconv"
 
 	merakigosdk "github.com/meraki/dashboard-api-go/v5/sdk"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -70,8 +70,8 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 		Attributes: map[string]schema.Attribute{
 			"interfaces": schema.SingleNestedAttribute{
 				MarkdownDescription: `Interface settings.`,
-				Computed:            true,
 				Optional:            true,
+				Computed:            true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
@@ -79,7 +79,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 					"wan1": schema.SingleNestedAttribute{
 						MarkdownDescription: `WAN 1 settings.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
@@ -88,7 +87,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 							"enabled": schema.BoolAttribute{
 								MarkdownDescription: `Enable or disable the interface.`,
-								Computed:            true,
 								Optional:            true,
 								PlanModifiers: []planmodifier.Bool{
 									boolplanmodifier.UseStateForUnknown(),
@@ -96,7 +94,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 							},
 							"pppoe": schema.SingleNestedAttribute{
 								MarkdownDescription: `Configuration options for PPPoE.`,
-								Computed:            true,
 								Optional:            true,
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
@@ -105,7 +102,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 									"authentication": schema.SingleNestedAttribute{
 										MarkdownDescription: `Settings for PPPoE Authentication.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Object{
 											objectplanmodifier.UseStateForUnknown(),
@@ -114,7 +110,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 											"enabled": schema.BoolAttribute{
 												MarkdownDescription: `Whether PPPoE authentication is enabled.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.Bool{
 													boolplanmodifier.UseStateForUnknown(),
@@ -123,7 +118,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											"password": schema.StringAttribute{
 												MarkdownDescription: `Password for PPPoE authentication. This parameter is not returned.`,
 												Sensitive:           true,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -131,7 +125,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"username": schema.StringAttribute{
 												MarkdownDescription: `Username for PPPoE authentication.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -141,7 +134,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 									},
 									"enabled": schema.BoolAttribute{
 										MarkdownDescription: `Whether PPPoE is enabled.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Bool{
 											boolplanmodifier.UseStateForUnknown(),
@@ -151,7 +143,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 							},
 							"svis": schema.SingleNestedAttribute{
 								MarkdownDescription: `SVI settings by protocol.`,
-								Computed:            true,
 								Optional:            true,
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
@@ -160,7 +151,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 									"ipv4": schema.SingleNestedAttribute{
 										MarkdownDescription: `IPv4 settings for static/dynamic mode.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Object{
 											objectplanmodifier.UseStateForUnknown(),
@@ -169,7 +159,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 											"address": schema.StringAttribute{
 												MarkdownDescription: `IP address and subnet mask when in static mode.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -178,7 +167,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											"assignment_mode": schema.StringAttribute{
 												MarkdownDescription: `The assignment mode for this SVI. Applies only when PPPoE is disabled.
                                                           Allowed values: [dynamic,static]`,
-												Computed: true,
 												Optional: true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -192,7 +180,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"gateway": schema.StringAttribute{
 												MarkdownDescription: `Gateway IP address when in static mode.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -200,20 +187,17 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"nameservers": schema.SingleNestedAttribute{
 												MarkdownDescription: `The nameserver settings for this SVI.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.Object{
 													objectplanmodifier.UseStateForUnknown(),
 												},
 												Attributes: map[string]schema.Attribute{
 
-													"addresses": schema.SetAttribute{
+													"addresses": schema.ListAttribute{
 														MarkdownDescription: `Up to 2 nameserver addresses to use, ordered in priority from highest to lowest priority.`,
-														Computed:            true,
 														Optional:            true,
-														Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, make([]attr.Value, 0))),
-														PlanModifiers: []planmodifier.Set{
-															setplanmodifier.UseStateForUnknown(),
+														PlanModifiers: []planmodifier.List{
+															listplanmodifier.UseStateForUnknown(),
 														},
 
 														ElementType: types.StringType,
@@ -224,7 +208,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 									},
 									"ipv6": schema.SingleNestedAttribute{
 										MarkdownDescription: `IPv6 settings for static/dynamic mode.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Object{
 											objectplanmodifier.UseStateForUnknown(),
@@ -233,7 +216,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 											"address": schema.StringAttribute{
 												MarkdownDescription: `Static address that will override the one(s) received by SLAAC.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -242,7 +224,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											"assignment_mode": schema.StringAttribute{
 												MarkdownDescription: `The assignment mode for this SVI. Applies only when PPPoE is disabled.
                                                           Allowed values: [dynamic,static]`,
-												Computed: true,
 												Optional: true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -256,7 +237,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"gateway": schema.StringAttribute{
 												MarkdownDescription: `Static gateway that will override the one received by autoconf.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -264,20 +244,17 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"nameservers": schema.SingleNestedAttribute{
 												MarkdownDescription: `The nameserver settings for this SVI.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.Object{
 													objectplanmodifier.UseStateForUnknown(),
 												},
 												Attributes: map[string]schema.Attribute{
 
-													"addresses": schema.SetAttribute{
+													"addresses": schema.ListAttribute{
 														MarkdownDescription: `Up to 2 nameserver addresses to use, ordered in priority from highest to lowest priority.`,
-														Computed:            true,
-														Default:             setdefault.StaticValue(types.SetNull(types.StringType)),
 														Optional:            true,
-														PlanModifiers: []planmodifier.Set{
-															setplanmodifier.UseStateForUnknown(),
+														PlanModifiers: []planmodifier.List{
+															listplanmodifier.UseStateForUnknown(),
 														},
 
 														ElementType: types.StringType,
@@ -290,7 +267,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 							},
 							"vlan_tagging": schema.SingleNestedAttribute{
 								MarkdownDescription: `VLAN tagging settings.`,
-								Computed:            true,
 								Optional:            true,
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
@@ -299,7 +275,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 									"enabled": schema.BoolAttribute{
 										MarkdownDescription: `Whether VLAN tagging is enabled.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Bool{
 											boolplanmodifier.UseStateForUnknown(),
@@ -307,8 +282,7 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 									},
 									"vlan_id": schema.Int64Attribute{
 										MarkdownDescription: `The ID of the VLAN to use for VLAN tagging.`,
-										// Computed:            true,
-										Optional: true,
+										Optional:            true,
 										PlanModifiers: []planmodifier.Int64{
 											int64planmodifier.UseStateForUnknown(),
 										},
@@ -319,7 +293,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 					},
 					"wan2": schema.SingleNestedAttribute{
 						MarkdownDescription: `WAN 2 settings.`,
-						Computed:            true,
 						Optional:            true,
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
@@ -328,7 +301,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 							"enabled": schema.BoolAttribute{
 								MarkdownDescription: `Enable or disable the interface.`,
-								Computed:            true,
 								Optional:            true,
 								PlanModifiers: []planmodifier.Bool{
 									boolplanmodifier.UseStateForUnknown(),
@@ -336,7 +308,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 							},
 							"pppoe": schema.SingleNestedAttribute{
 								MarkdownDescription: `Configuration options for PPPoE.`,
-								Computed:            true,
 								Optional:            true,
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
@@ -345,7 +316,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 									"authentication": schema.SingleNestedAttribute{
 										MarkdownDescription: `Settings for PPPoE Authentication.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Object{
 											objectplanmodifier.UseStateForUnknown(),
@@ -354,7 +324,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 											"enabled": schema.BoolAttribute{
 												MarkdownDescription: `Whether PPPoE authentication is enabled.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.Bool{
 													boolplanmodifier.UseStateForUnknown(),
@@ -363,7 +332,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											"password": schema.StringAttribute{
 												MarkdownDescription: `Password for PPPoE authentication. This parameter is not returned.`,
 												Sensitive:           true,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -371,7 +339,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"username": schema.StringAttribute{
 												MarkdownDescription: `Username for PPPoE authentication.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -381,7 +348,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 									},
 									"enabled": schema.BoolAttribute{
 										MarkdownDescription: `Whether PPPoE is enabled.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Bool{
 											boolplanmodifier.UseStateForUnknown(),
@@ -391,7 +357,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 							},
 							"svis": schema.SingleNestedAttribute{
 								MarkdownDescription: `SVI settings by protocol.`,
-								Computed:            true,
 								Optional:            true,
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
@@ -400,7 +365,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 									"ipv4": schema.SingleNestedAttribute{
 										MarkdownDescription: `IPv4 settings for static/dynamic mode.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Object{
 											objectplanmodifier.UseStateForUnknown(),
@@ -409,7 +373,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 											"address": schema.StringAttribute{
 												MarkdownDescription: `IP address and subnet mask when in static mode.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -418,7 +381,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											"assignment_mode": schema.StringAttribute{
 												MarkdownDescription: `The assignment mode for this SVI. Applies only when PPPoE is disabled.
                                                           Allowed values: [dynamic,static]`,
-												Computed: true,
 												Optional: true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -432,7 +394,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"gateway": schema.StringAttribute{
 												MarkdownDescription: `Gateway IP address when in static mode.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -440,20 +401,17 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"nameservers": schema.SingleNestedAttribute{
 												MarkdownDescription: `The nameserver settings for this SVI.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.Object{
 													objectplanmodifier.UseStateForUnknown(),
 												},
 												Attributes: map[string]schema.Attribute{
 
-													"addresses": schema.SetAttribute{
+													"addresses": schema.ListAttribute{
 														MarkdownDescription: `Up to 2 nameserver addresses to use, ordered in priority from highest to lowest priority.`,
-														Computed:            true,
-														Default:             setdefault.StaticValue(types.SetNull(types.StringType)),
 														Optional:            true,
-														PlanModifiers: []planmodifier.Set{
-															setplanmodifier.UseStateForUnknown(),
+														PlanModifiers: []planmodifier.List{
+															listplanmodifier.UseStateForUnknown(),
 														},
 
 														ElementType: types.StringType,
@@ -464,7 +422,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 									},
 									"ipv6": schema.SingleNestedAttribute{
 										MarkdownDescription: `IPv6 settings for static/dynamic mode.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Object{
 											objectplanmodifier.UseStateForUnknown(),
@@ -473,7 +430,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 											"address": schema.StringAttribute{
 												MarkdownDescription: `Static address that will override the one(s) received by SLAAC.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -482,7 +438,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											"assignment_mode": schema.StringAttribute{
 												MarkdownDescription: `The assignment mode for this SVI. Applies only when PPPoE is disabled.
                                                           Allowed values: [dynamic,static]`,
-												Computed: true,
 												Optional: true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -496,7 +451,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"gateway": schema.StringAttribute{
 												MarkdownDescription: `Static gateway that will override the one received by autoconf.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.String{
 													stringplanmodifier.UseStateForUnknown(),
@@ -504,20 +458,17 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 											},
 											"nameservers": schema.SingleNestedAttribute{
 												MarkdownDescription: `The nameserver settings for this SVI.`,
-												Computed:            true,
 												Optional:            true,
 												PlanModifiers: []planmodifier.Object{
 													objectplanmodifier.UseStateForUnknown(),
 												},
 												Attributes: map[string]schema.Attribute{
 
-													"addresses": schema.SetAttribute{
+													"addresses": schema.ListAttribute{
 														MarkdownDescription: `Up to 2 nameserver addresses to use, ordered in priority from highest to lowest priority.`,
-														Computed:            true,
-														Default:             setdefault.StaticValue(types.SetNull(types.StringType)),
 														Optional:            true,
-														PlanModifiers: []planmodifier.Set{
-															setplanmodifier.UseStateForUnknown(),
+														PlanModifiers: []planmodifier.List{
+															listplanmodifier.UseStateForUnknown(),
 														},
 
 														ElementType: types.StringType,
@@ -530,7 +481,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 							},
 							"vlan_tagging": schema.SingleNestedAttribute{
 								MarkdownDescription: `VLAN tagging settings.`,
-								Computed:            true,
 								Optional:            true,
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
@@ -539,7 +489,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 
 									"enabled": schema.BoolAttribute{
 										MarkdownDescription: `Whether VLAN tagging is enabled.`,
-										Computed:            true,
 										Optional:            true,
 										PlanModifiers: []planmodifier.Bool{
 											boolplanmodifier.UseStateForUnknown(),
@@ -547,8 +496,7 @@ func (r *DevicesApplianceUplinksSettingsResource) Schema(_ context.Context, _ re
 									},
 									"vlan_id": schema.Int64Attribute{
 										MarkdownDescription: `The ID of the VLAN to use for VLAN tagging.`,
-										// Computed:            true,
-										Optional: true,
+										Optional:            true,
 										PlanModifiers: []planmodifier.Int64{
 											int64planmodifier.UseStateForUnknown(),
 										},
@@ -589,27 +537,6 @@ func (r *DevicesApplianceUplinksSettingsResource) Create(ctx context.Context, re
 	vvSerial := data.Serial.ValueString()
 	//Has Item and not has items
 
-	if vvSerial != "" {
-		//dentro
-		responseVerifyItem, restyResp1, err := r.client.Appliance.GetDeviceApplianceUplinksSettings(vvSerial)
-		// No Post
-		if err != nil || restyResp1 == nil || responseVerifyItem == nil {
-			resp.Diagnostics.AddError(
-				"Resource DevicesApplianceUplinksSettings  only have update context, not create.",
-				err.Error(),
-			)
-			return
-		}
-
-		if responseVerifyItem == nil {
-			resp.Diagnostics.AddError(
-				"Resource DevicesApplianceUplinksSettings only have update context, not create.",
-				err.Error(),
-			)
-			return
-		}
-	}
-
 	// UPDATE NO CREATE
 	dataRequest := data.toSdkApiRequestUpdate(ctx)
 	response, restyResp2, err := r.client.Appliance.UpdateDeviceApplianceUplinksSettings(vvSerial, dataRequest)
@@ -618,7 +545,7 @@ func (r *DevicesApplianceUplinksSettingsResource) Create(ctx context.Context, re
 		if restyResp2 != nil {
 			resp.Diagnostics.AddError(
 				"Failure when executing UpdateDeviceApplianceUplinksSettings",
-				restyResp2.String(),
+				"Status: "+strconv.Itoa(restyResp2.StatusCode())+"\n"+restyResp2.String(),
 			)
 			return
 		}
@@ -629,49 +556,18 @@ func (r *DevicesApplianceUplinksSettingsResource) Create(ctx context.Context, re
 		return
 	}
 
-	//Assign Path Params required
-
-	responseGet, restyResp1, err := r.client.Appliance.GetDeviceApplianceUplinksSettings(vvSerial)
-	if err != nil || responseGet == nil {
-		if restyResp1 != nil {
-			resp.Diagnostics.AddError(
-				"Failure when executing GetDeviceApplianceUplinksSettings",
-				restyResp1.String(),
-			)
-			return
-		}
-		resp.Diagnostics.AddError(
-			"Failure when executing GetDeviceApplianceUplinksSettings",
-			err.Error(),
-		)
-		return
-	}
-
-	data = ResponseApplianceGetDeviceApplianceUplinksSettingsItemToBodyRs(data, responseGet, false)
-
-	diags := resp.State.Set(ctx, &data)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 }
 
 func (r *DevicesApplianceUplinksSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data DevicesApplianceUplinksSettingsRs
 
-	var item types.Object
-
-	resp.Diagnostics.Append(req.State.Get(ctx, &item)...)
-	if resp.Diagnostics.HasError() {
+	diags := req.State.Get(ctx, &data)
+	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(item.As(ctx, &data, basetypes.ObjectAsOptions{
-		UnhandledNullAsEmpty:    true,
-		UnhandledUnknownAsEmpty: true,
-	})...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	//Has Paths
 	// Has Item2
 
@@ -701,33 +597,29 @@ func (r *DevicesApplianceUplinksSettingsResource) Read(ctx context.Context, req 
 	}
 	//entro aqui 2
 	data = ResponseApplianceGetDeviceApplianceUplinksSettingsItemToBodyRs(data, responseGet, true)
-	diags := resp.State.Set(ctx, &data)
-	//update path params assigned
-	resp.Diagnostics.Append(diags...)
+	log.Printf("data: %+v", data.Interfaces)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 func (r *DevicesApplianceUplinksSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("serial"), req.ID)...)
 }
 
 func (r *DevicesApplianceUplinksSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data DevicesApplianceUplinksSettingsRs
-	merge(ctx, req, resp, &data)
+	var plan DevicesApplianceUplinksSettingsRs
+	merge(ctx, req, resp, &plan)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	//Has Paths
-	//Update
-
 	//Path Params
-	vvSerial := data.Serial.ValueString()
-	dataRequest := data.toSdkApiRequestUpdate(ctx)
+	vvSerial := plan.Serial.ValueString()
+	dataRequest := plan.toSdkApiRequestUpdate(ctx)
 	response, restyResp2, err := r.client.Appliance.UpdateDeviceApplianceUplinksSettings(vvSerial, dataRequest)
 	if err != nil || restyResp2 == nil || response == nil {
 		if restyResp2 != nil {
 			resp.Diagnostics.AddError(
 				"Failure when executing UpdateDeviceApplianceUplinksSettings",
-				restyResp2.String(),
+				"Status: "+strconv.Itoa(restyResp2.StatusCode())+"\n"+restyResp2.String(),
 			)
 			return
 		}
@@ -737,9 +629,7 @@ func (r *DevicesApplianceUplinksSettingsResource) Update(ctx context.Context, re
 		)
 		return
 	}
-	resp.Diagnostics.Append(req.Plan.Set(ctx, &data)...)
-	diags := resp.State.Set(ctx, &data)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *DevicesApplianceUplinksSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -790,7 +680,7 @@ type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv4Rs 
 }
 
 type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv4NameserversRs struct {
-	Addresses types.Set `tfsdk:"addresses"`
+	Addresses types.List `tfsdk:"addresses"`
 }
 
 type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv6Rs struct {
@@ -801,7 +691,7 @@ type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv6Rs 
 }
 
 type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv6NameserversRs struct {
-	Addresses types.Set `tfsdk:"addresses"`
+	Addresses types.List `tfsdk:"addresses"`
 }
 
 type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1VlanTaggingRs struct {
@@ -840,7 +730,7 @@ type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv4Rs 
 }
 
 type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv4NameserversRs struct {
-	Addresses types.Set `tfsdk:"addresses"`
+	Addresses types.List `tfsdk:"addresses"`
 }
 
 type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv6Rs struct {
@@ -851,7 +741,7 @@ type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv6Rs 
 }
 
 type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv6NameserversRs struct {
-	Addresses types.Set `tfsdk:"addresses"`
+	Addresses types.List `tfsdk:"addresses"`
 }
 
 type ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2VlanTaggingRs struct {
@@ -1163,7 +1053,12 @@ func ResponseApplianceGetDeviceApplianceUplinksSettingsItemToBodyRs(state Device
 															}
 															return types.Bool{}
 														}(),
-														Username: types.StringValue(response.Interfaces.Wan1.Pppoe.Authentication.Username),
+														Username: func() types.String {
+															if response.Interfaces.Wan1.Pppoe.Authentication.Username != "" {
+																return types.StringValue(response.Interfaces.Wan1.Pppoe.Authentication.Username)
+															}
+															return types.String{}
+														}(),
 													}
 												}
 												return nil
@@ -1184,13 +1079,28 @@ func ResponseApplianceGetDeviceApplianceUplinksSettingsItemToBodyRs(state Device
 											IPv4: func() *ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv4Rs {
 												if response.Interfaces.Wan1.Svis.IPv4 != nil {
 													return &ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv4Rs{
-														Address:        types.StringValue(response.Interfaces.Wan1.Svis.IPv4.Address),
-														AssignmentMode: types.StringValue(response.Interfaces.Wan1.Svis.IPv4.AssignmentMode),
-														Gateway:        types.StringValue(response.Interfaces.Wan1.Svis.IPv4.Gateway),
+														Address: func() types.String {
+															if response.Interfaces.Wan1.Svis.IPv4.Address != "" {
+																return types.StringValue(response.Interfaces.Wan1.Svis.IPv4.Address)
+															}
+															return types.String{}
+														}(),
+														AssignmentMode: func() types.String {
+															if response.Interfaces.Wan1.Svis.IPv4.AssignmentMode != "" {
+																return types.StringValue(response.Interfaces.Wan1.Svis.IPv4.AssignmentMode)
+															}
+															return types.String{}
+														}(),
+														Gateway: func() types.String {
+															if response.Interfaces.Wan1.Svis.IPv4.Gateway != "" {
+																return types.StringValue(response.Interfaces.Wan1.Svis.IPv4.Gateway)
+															}
+															return types.String{}
+														}(),
 														Nameservers: func() *ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv4NameserversRs {
 															if response.Interfaces.Wan1.Svis.IPv4.Nameservers != nil {
 																return &ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv4NameserversRs{
-																	Addresses: StringSliceToSet(response.Interfaces.Wan1.Svis.IPv4.Nameservers.Addresses),
+																	Addresses: StringSliceToList(response.Interfaces.Wan1.Svis.IPv4.Nameservers.Addresses),
 																}
 															}
 															return nil
@@ -1202,13 +1112,28 @@ func ResponseApplianceGetDeviceApplianceUplinksSettingsItemToBodyRs(state Device
 											IPv6: func() *ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv6Rs {
 												if response.Interfaces.Wan1.Svis.IPv6 != nil {
 													return &ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv6Rs{
-														Address:        types.StringValue(response.Interfaces.Wan1.Svis.IPv6.Address),
-														AssignmentMode: types.StringValue(response.Interfaces.Wan1.Svis.IPv6.AssignmentMode),
-														Gateway:        types.StringValue(response.Interfaces.Wan1.Svis.IPv6.Gateway),
+														Address: func() types.String {
+															if response.Interfaces.Wan1.Svis.IPv6.Address != "" {
+																return types.StringValue(response.Interfaces.Wan1.Svis.IPv6.Address)
+															}
+															return types.String{}
+														}(),
+														AssignmentMode: func() types.String {
+															if response.Interfaces.Wan1.Svis.IPv6.AssignmentMode != "" {
+																return types.StringValue(response.Interfaces.Wan1.Svis.IPv6.AssignmentMode)
+															}
+															return types.String{}
+														}(),
+														Gateway: func() types.String {
+															if response.Interfaces.Wan1.Svis.IPv6.Gateway != "" {
+																return types.StringValue(response.Interfaces.Wan1.Svis.IPv6.Gateway)
+															}
+															return types.String{}
+														}(),
 														Nameservers: func() *ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv6NameserversRs {
 															if response.Interfaces.Wan1.Svis.IPv6.Nameservers != nil {
 																return &ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan1SvisIpv6NameserversRs{
-																	Addresses: StringSliceToSet(response.Interfaces.Wan1.Svis.IPv6.Nameservers.Addresses),
+																	Addresses: StringSliceToList(response.Interfaces.Wan1.Svis.IPv6.Nameservers.Addresses),
 																}
 															}
 															return nil
@@ -1265,7 +1190,12 @@ func ResponseApplianceGetDeviceApplianceUplinksSettingsItemToBodyRs(state Device
 															}
 															return types.Bool{}
 														}(),
-														Username: types.StringValue(response.Interfaces.Wan2.Pppoe.Authentication.Username),
+														Username: func() types.String {
+															if response.Interfaces.Wan2.Pppoe.Authentication.Username != "" {
+																return types.StringValue(response.Interfaces.Wan2.Pppoe.Authentication.Username)
+															}
+															return types.String{}
+														}(),
 													}
 												}
 												return nil
@@ -1286,13 +1216,28 @@ func ResponseApplianceGetDeviceApplianceUplinksSettingsItemToBodyRs(state Device
 											IPv4: func() *ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv4Rs {
 												if response.Interfaces.Wan2.Svis.IPv4 != nil {
 													return &ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv4Rs{
-														Address:        types.StringValue(response.Interfaces.Wan2.Svis.IPv4.Address),
-														AssignmentMode: types.StringValue(response.Interfaces.Wan2.Svis.IPv4.AssignmentMode),
-														Gateway:        types.StringValue(response.Interfaces.Wan2.Svis.IPv4.Gateway),
+														Address: func() types.String {
+															if response.Interfaces.Wan2.Svis.IPv4.Address != "" {
+																return types.StringValue(response.Interfaces.Wan2.Svis.IPv4.Address)
+															}
+															return types.String{}
+														}(),
+														AssignmentMode: func() types.String {
+															if response.Interfaces.Wan2.Svis.IPv4.AssignmentMode != "" {
+																return types.StringValue(response.Interfaces.Wan2.Svis.IPv4.AssignmentMode)
+															}
+															return types.String{}
+														}(),
+														Gateway: func() types.String {
+															if response.Interfaces.Wan2.Svis.IPv4.Gateway != "" {
+																return types.StringValue(response.Interfaces.Wan2.Svis.IPv4.Gateway)
+															}
+															return types.String{}
+														}(),
 														Nameservers: func() *ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv4NameserversRs {
 															if response.Interfaces.Wan2.Svis.IPv4.Nameservers != nil {
 																return &ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv4NameserversRs{
-																	Addresses: StringSliceToSet(response.Interfaces.Wan2.Svis.IPv4.Nameservers.Addresses),
+																	Addresses: StringSliceToList(response.Interfaces.Wan2.Svis.IPv4.Nameservers.Addresses),
 																}
 															}
 															return nil
@@ -1304,13 +1249,28 @@ func ResponseApplianceGetDeviceApplianceUplinksSettingsItemToBodyRs(state Device
 											IPv6: func() *ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv6Rs {
 												if response.Interfaces.Wan2.Svis.IPv6 != nil {
 													return &ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv6Rs{
-														Address:        types.StringValue(response.Interfaces.Wan2.Svis.IPv6.Address),
-														AssignmentMode: types.StringValue(response.Interfaces.Wan2.Svis.IPv6.AssignmentMode),
-														Gateway:        types.StringValue(response.Interfaces.Wan2.Svis.IPv6.Gateway),
+														Address: func() types.String {
+															if response.Interfaces.Wan2.Svis.IPv6.Address != "" {
+																return types.StringValue(response.Interfaces.Wan2.Svis.IPv6.Address)
+															}
+															return types.String{}
+														}(),
+														AssignmentMode: func() types.String {
+															if response.Interfaces.Wan2.Svis.IPv6.AssignmentMode != "" {
+																return types.StringValue(response.Interfaces.Wan2.Svis.IPv6.AssignmentMode)
+															}
+															return types.String{}
+														}(),
+														Gateway: func() types.String {
+															if response.Interfaces.Wan2.Svis.IPv6.Gateway != "" {
+																return types.StringValue(response.Interfaces.Wan2.Svis.IPv6.Gateway)
+															}
+															return types.String{}
+														}(),
 														Nameservers: func() *ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv6NameserversRs {
 															if response.Interfaces.Wan2.Svis.IPv6.Nameservers != nil {
 																return &ResponseApplianceGetDeviceApplianceUplinksSettingsInterfacesWan2SvisIpv6NameserversRs{
-																	Addresses: StringSliceToSet(response.Interfaces.Wan2.Svis.IPv6.Nameservers.Addresses),
+																	Addresses: StringSliceToList(response.Interfaces.Wan2.Svis.IPv6.Nameservers.Addresses),
 																}
 															}
 															return nil
